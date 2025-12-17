@@ -82,10 +82,7 @@ export function calculateOrthographicProjections(
   const offsetXFront = Math.floor((GRID_SIZE - width) / 2);
   const offsetYFront = Math.floor((GRID_SIZE - height) / 2); // offsetYFront is padding from top
 
-  // For Top View:
-  // UI now shows X on vertical (rows) and Z on horizontal (cols)
-  // So, the grid's "height" (rows) should accommodate the 3D "width" (X dimension)
-  // and the grid's "width" (cols) should accommodate the 3D "depth" (Z dimension).
+  // For Top View (NEW MAPPING: Z-horizontal, X-vertical, inverted X)
   const offsetXTop = Math.floor((GRID_SIZE - depth) / 2); // Top view cols map to Z (depth)
   const offsetYTop = Math.floor((GRID_SIZE - width) / 2); // Top view rows map to X (width)
 
@@ -105,18 +102,18 @@ export function calculateOrthographicProjections(
             frontView[frontRow][frontCol] = 1;
           }
 
-          // Top View (X-Z plane, looking from positive Y): row = x, col = z (NEW MAPPING)
-          // Map to canvas coords: row = x + offsetYTop, col = z + offsetXTop
-          const topRow = x + offsetYTop; // Now maps to X
-          const topCol = z + offsetXTop; // Now maps to Z
+          // Top View (NEW: Z-horizontal, X-vertical, inverted X)
+          // Map to canvas coords: row = GRID_SIZE - 1 - (x + offsetYTop), col = z + offsetXTop
+          const topRow = GRID_SIZE - 1 - (x + offsetYTop); // 3D X becomes inverted 2D row (width down)
+          const topCol = z + offsetXTop;                   // 3D Z becomes 2D column (depth right)
           if (topRow >= 0 && topRow < GRID_SIZE && topCol >= 0 && topCol < GRID_SIZE) {
             topView[topRow][topCol] = 1;
           }
 
           // Side View (Y-Z plane, looking from positive X): row = (height - 1 - y), col = z
-          // Map to canvas coords: row = GRID_SIZE - 1 - (y + offsetYSide), col = z + offsetXSide
+          // Map to canvas coords: row = GRID_SIZE - 1 - (y + offsetYSide), col = (depth - 1 - z) + offsetXSide
           const sideRow = GRID_SIZE - 1 - (y + offsetYSide);
-          const sideCol = z + offsetXSide;
+          const sideCol = (depth - 1 - z) + offsetXSide; // INVERTED Z-axis for horizontal display
           if (sideRow >= 0 && sideRow < GRID_SIZE && sideCol >= 0 && sideCol < GRID_SIZE) {
             sideView[sideRow][sideCol] = 1;
           }
@@ -183,21 +180,22 @@ export function find3DBlocksFor2DCell(
               }
               break;
             case 'top':
-              // Top View (NEW MAPPING): 2D row = x + offsetYTop, 2D col = z + offsetXTop
+              // Top View (NEW: Z-horizontal, X-vertical, inverted X)
               // So, for a given 2D (row, col) relative to grid:
-              // 3D x = row - offsetYTop
               // 3D z = col - offsetXTop
-              const targetTopX = row - viewOffsets.y; // Now maps 2D row back to 3D X
-              const targetTopZ = col - viewOffsets.x; // Now maps 2D col back to 3D Z
-              if (x === targetTopX && z === targetTopZ) {
+              // 3D x = GRID_SIZE - 1 - row - offsetYTop
+              const targetTopZ = col - viewOffsets.x; // 2D col maps back to 3D Z
+              const targetTopX = GRID_SIZE - 1 - row - viewOffsets.y; // Inverted 2D row maps back to 3D X
+              if (z === targetTopZ && x === targetTopX) {
                   contributingBlocks.push({ x, y, z });
               }
               break;
             case 'side':
-              // Side View: 2D row = GRID_SIZE - 1 - (y + offsetYSide), 2D col = z + offsetXSide
-              // 3D z = col - offsetXSide
+              // Side View (NEW MAPPING): 2D row = GRID_SIZE - 1 - (y + offsetYSide), 2D col = (depth - 1 - z) + offsetXSide
+              // So, for a given 2D (row, col) relative to grid:
               // 3D y = GRID_SIZE - 1 - row - offsetYSide
-              const targetSideZ = col - viewOffsets.x;
+              // 3D z = (depth - 1) - (col - offsetXSide)
+              const targetSideZ = (depth - 1) - (col - viewOffsets.x); // INVERTED 2D col maps back to 3D Z
               const targetSideY = GRID_SIZE - 1 - row - viewOffsets.y; // Correctly map canvas row to 3D Y
               if (z === targetSideZ && y === targetSideY) {
                   contributingBlocks.push({ x, y, z });

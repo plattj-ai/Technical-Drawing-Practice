@@ -134,9 +134,9 @@ const OrthographicGrid: React.FC<OrthographicGridProps> = ({
         { type: 'vertical', color: '#22c55e', label: 'Y', position: 'left', direction: 'up' },
       ],
       top: [
-        // Swapped X and Z axes for Top View
-        { type: 'vertical', color: '#ef4444', label: 'X', position: 'left', direction: 'down' }, // X is now vertical (maps to rows)
-        { type: 'horizontal', color: '#3b82f6', label: 'Z', position: 'bottom', direction: 'right' }, // Z is now horizontal (maps to columns)
+        // NEW: Z (horizontal, bottom), X (vertical, left)
+        { type: 'horizontal', color: '#3b82f6', label: 'Z', position: 'bottom', direction: 'right' }, // Z horizontal (maps to columns)
+        { type: 'vertical', color: '#ef4444', label: 'X', position: 'left', direction: 'up' },        // X vertical (maps to rows), inverted
       ],
       side: [
         { type: 'horizontal', color: '#3b82f6', label: 'Z', position: 'bottom', direction: 'right' },
@@ -278,8 +278,8 @@ const OrthographicGrid: React.FC<OrthographicGridProps> = ({
   //     if (hoveredCell.current) {
   //       onCellHover(hoveredCell.current.row, hoveredCell.current.col, viewType, false);
   //       hoveredCell.current = null;
-  //     }
-  //   }
+    // }
+  // }
   // }, [gridState, viewType, onCellHover]);
 
 
