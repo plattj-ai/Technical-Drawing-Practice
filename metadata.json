@@ -1,0 +1,5 @@
+{
+  "name": "Orthographic Projection Coach",
+  "description": "An interactive web application for 8th-grade students to practice orthographic projection and spatial reasoning using AI-generated 3D shapes, with an AI coach for hints.",
+  "requestFramePermissions": []
+}
